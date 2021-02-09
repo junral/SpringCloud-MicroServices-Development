@@ -1,0 +1,53 @@
+buildscript {
+	// ext用于定义动态属性
+	ext {
+		springBootVersion = '2.4.2'
+	}
+
+	// 使用Maven的中央仓库及Spring自己的仓库（也可以指定其他仓库）
+	repositories {
+		//mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+		maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+	}
+
+	// 依赖关系
+	dependencies {
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+	}
+}
+
+// 使用插件
+plugins {
+	id 'org.springframework.boot' version '2.4.2'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+
+group = 'xyz.junral.spring.cloud'
+version = '1.0.0'
+sourceCompatibility = '1.8'
+
+ext {
+	springCloudVersion = '2020.0.1'
+}
+
+repositories {
+	//mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+	maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+}
+
+dependencies {
+	// 添加Spring Cloud Starter Netflix Eureka Server依赖
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}

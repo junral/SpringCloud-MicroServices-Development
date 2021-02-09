@@ -2536,11 +2536,117 @@ dependencies {
 
    #### 更改build.gradle配置
 
+   ```groovy
+//buildscript代码块中脚本优先执行
+   buildscript {
+    // ext用于定义动态属性
+       ext {
+           springBootVersion = '2.0.0.M3'
+       }
+       
+       // 使用了Maven的中央仓库及Spring自己的仓库（也可以指定其他仓库）
+       repositories {
+           //mavenCentral()
+           maven { url "https://repo.spring.io/snapshot" }
+           maven { url "https://repo.spring.io/milestone" }
+           maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+       }
+       
+       // 依赖关系
+       dependencies {
+           // classpath声明了再执行其他脚本时，ClassLoader可以使用这些依赖
+           classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+       }
+   }
+   
+   // 使用插件
+   apply plugin: 'java'
+   apply plugin: 'eclipse'
+   apply plugin: 'org.springframework.boot'
+   apply plugin: 'io.spring.dependency-management'
+   
+   // 指定了生成的编译文件的版本，默认是打包成了jar包
+   group = 'com.waylau.spring.cloud'
+   version = '1.0.0'
+   
+   // 指定编译.java文件的JDK版本
+   sourceCompatibility = 1.8
+   
+   // 使用了Maven的中央仓库及Spring自己的仓库（也可以指定其他仓库）
+   repositories {
+       //mavenCentral()
+       maven { url "https://repo.spring.io/snapshot" }
+       maven { url "https://repo.spring.io/milestone" }
+       maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+   }
+   
+   ext {
+       springCloudVersion = 'Finchley.M2'
+   }
+   
+   dependencies {
+       
+       // 添加Spring Cloud Starter Netflix Eureka Server依赖
+       compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-server')
+       
+       // 该依赖用于测试阶段
+       testCompile('org.springframework.boot:spring-boot-starter-test')
+   }
+   
+   dependencyManagement {
+       imports {
+           mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+       }
+   }
+   ```
+   
+   
+   
    #### 启用Eureka Server
-
+   
+   Application.java源代码：
+   
+   ```java
+   import org.springframework.boot.SpringApplication;
+   import org.springframework.boot.annotaion.SpringBootApplication;
+   import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
+   
+   /**
+    * 主应用程序
+    */
+   @SpringBootApplication
+   @EnableEurekaServer
+   public class Application {
+       public static void main(String[] args) {
+           SpringApplication.run(Application.class, args);
+       }
+   }
+   ```
+   
+   
+   
    #### 修改项目配置
-
+   
+   application.properties
+   
+   ```properties
+   server.port: 8761
+   
+   eureka.instance.hostname: localhost
+   eureka.client.registerWithEureka: false
+   eureka.client.fetchRegistry: false
+   eureka.client.serviceUrl.defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+   ```
+   
+   * server.port：指明了应用启动的端口号。
+   * eureka.instance.hostname：应用的主机名称。
+   * erurka.client.registerWithEureka：值为false表示自身仅作为服务，不作为客户端。
+   * eureka.client.fetchRegistry：值为false表示无须注册自身。
+   * eureka.client.serviceUrl.defaultZone：指明了应用的URL。
+   
    #### 清空资源目录
+   
+   在src/main/resources目录下，除了application.properties文件外，其他没有用到的目录或文件都删除，特别是templates目录，因为这个目录会覆盖Eureka Server自带的管理界面。
    
    #### 启动
    
@@ -2548,11 +2654,60 @@ dependencies {
    
    #### 所需环境
    
+   * JDK
+   * Gradle
+   * Spring Boot
+   * Spring Cloud Starter Netflix Eureka Client
+   
    #### 更改build.gradle配置
+   
+   build.gradle源码：
+   
+   ```groovy
+   dependencies {
+       // 添加Spring Cloud Starter Netflix Eureka Client依赖
+       compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
+       // 该依赖用于测试阶段
+       testCompile('org.springframework.boot:spring-boot-starter-test')
+   }
+   ```
+   
+   
    
    #### 一个最简单的Eureka Client
    
+   Application.java源代码：
+   
+   ```java
+   import org.springframework.boot.SpringApplication;
+   import org.springframework.boot.annotaion.SpringBootApplication;
+   import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+   
+   /**
+    * 主应用程序
+    */
+   @SpringBootApplication
+   @EnableDiscoveryClient
+   public class Application {
+       public static void main(String[] args) {
+           SpringApplication.run(Application.class, args);
+       }
+   }
+   ```
+   
+   
+   
    #### 修改项目配置
+   
+   application.properties内容：
+   
+   ```properties
+   spring.application.name: micro-weather-eureka-client
+   eureka.client.serviceUrl.defualtZone: http://localhost:8761/eureka/
+   ```
+   
+   * spring.application.name：指定了应用的名称。
+   * eureka.client.serviceUrl.defaultZone：指明了Eureka Server的位置。
    
    #### 运行和测试
    
