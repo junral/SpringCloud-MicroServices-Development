@@ -1,0 +1,22 @@
+plugins {
+	id 'org.springframework.boot' version '2.4.2'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+
+group = 'xyz.junral.spring.cloud'
+version = '1.0.0'
+sourceCompatibility = '1.8'
+
+repositories {
+	//mavenCentral()
+	maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+}
+
+// 依赖关系
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// 添加Spring Boot Thymeleaf的依赖
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
