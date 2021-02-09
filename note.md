@@ -2431,6 +2431,12 @@ dependencies {
 
    #### 所需环境
 
+   * JDK
+   * Gradle
+   * Spring Boot Web Starter
+   * Spring Boot Data Redis Starter
+   * Redis
+
    #### 修改天气数据服务接口及实现
 
    #### 调整控制层的代码
