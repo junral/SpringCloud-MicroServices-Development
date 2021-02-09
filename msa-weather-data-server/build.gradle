@@ -19,9 +19,5 @@ dependencies {
 	implementation 'org.apache.httpcomponents:httpclient:4.5.13'
 	// 添加Spring Boot Data Redis Starter依赖
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	// 添加Spring Boot Quartz Starter依赖
-	implementation 'org.springframework.boot:spring-boot-starter-quartz'
-	// 添加Spring Boot Thymeleaf的依赖
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
