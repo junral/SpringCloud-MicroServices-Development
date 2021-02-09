@@ -6,12 +6,12 @@ import java.io.Reader;
 import java.io.StringReader;
 
 /**
- * XML工具
+ * XML宸ュ叿
  */
 public class XmlBuilder {
 
     /**
-     * 将XML字符串转为指定类型的POJO
+     * 灏哫ML瀛楃涓茶浆涓烘寚瀹氱被鍨嬬殑POJO
      * @param clazz
      * @param xmlStr
      * @return
@@ -21,10 +21,9 @@ public class XmlBuilder {
         Object  xmlObject = null;
         Reader reader = null;
 
-        Class[] classesToBeBound;
         JAXBContext context = JAXBContext.newInstance(clazz);
 
-        // 将Xml转成对象的核心接口
+        // 灏哫ml杞垚瀵硅薄鐨勬牳蹇冩帴鍙�
         Unmarshaller unmarshaller = context.createUnmarshaller();
 
         reader = new StringReader(xmlStr);

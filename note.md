@@ -2715,11 +2715,47 @@ dependencies {
    
    #### 所需环境
    
+   * JDK
+   * Gradle
+   * Redis
+   * Spring Boot
+   * Spring Cloud Starter Netflix Eureka Client
+   
    #### 更改build.gradle配置
    
    #### 启用Eureka Client
    
+   Application.java源代码：
+   
+   ```java
+   import org.springframework.boot.SpringApplication;
+   import org.springframework.boot.annotaion.SpringBootApplication;
+   import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+   
+   /**
+    * 主应用程序
+    */
+   @SpringBootApplication
+   @EnableDiscoveryClient
+   public class Application {
+       public static void main(String[] args) {
+           SpringApplication.run(Application.class, args);
+       }
+   }
+   ```
+   
+   
+   
    #### 修改项目配置
+   
+   application.properties内容：
+   
+   ```properties
+   spring.application.name: msa-weather-collection-eureka
+   eureka.client.serviceUrl.defualtZone: http://localhost:8761/eureka/
+   ```
+   
+   
    
    #### 运行和测试
    
@@ -2727,4 +2763,139 @@ dependencies {
    
    ### 微服务的消费模式
    
+   基于HTTP的客户端经常被用作微服务的消费者。
+   
    #### 服务直连模式
+   
+   服务直连模式是最容易理解的，例如，在浏览器里面访问某篇文章，我们知道这篇文章的URL，就能直接通过URL访问想要的资源。
+   
+   服务直连的特点：
+   
+   * 简洁明了。
+   * 平台语言无关性。
+   
+   #### 客户端发现模式
+   
+   客户端发现模式是一种客户端来决定相应服务实例的网络位置的解决方案。原理如下：
+   
+   * 当服务实例启动后，将自己的位置信息提交到服务注册表（Service Registry）中。服务注册表维护者所有可用的服务实例的列表。
+   * 客户端从服务注册表进行查询，来获取可用的服务实例。
+   * 在选取得可用的服务实例的过程中，客户端自行使用负载均衡算法从多个服务实例中选择一个，然后发出请求。
+   
+   服务注册表中的实例也是动态变化的。当有新的实例启动时，实例会将实例信息注册到服务注册表中；当实例下线或不可用时，服务注册表也能及时感知到，并将不可用实例及时从服务注册表中清除。服务注册表可以采取类似心跳等机制来实现对服务实例的感知。
+   
+   Spring Cloud提供了完整的服务注册及服务发现的实现方式。Eureka提供了服务注册表的功能，为服务实例注册管理和查询可用实例提供REST API接口。Ribbon主要功能是提供客户端的软件负载均衡算法，将中间层服务连接在一起。Ribbon客户端组件提供一系列完善的配置项，在服务注册表所列出的实例，Ribbon会自动帮助你基于某种规则（如简单轮询、随机连接等）去连接这些实例。
+   
+   ZooKeeper是Apache基金会下的一个开源的、高可用的分布式应用协调服务。
+   
+   客户端发现模式的优点是，相对于直连模式，除了服务注册外，其他部分基本无须做改动。此外，由于客户端已经知晓所有可用的服务实例，所以能够针对特定应用来实现智能的负载均衡。
+   
+   客户端发现模式的缺点是，客户端需要与服务注册表进行绑定，要针对服务端用到的每个编程语言和框架，来实现客户端的服务发现逻辑。
+   
+   #### 服务端发现模式
+   
+   该模式是客户端通过负载均衡器向某个服务提出请求，负载均衡器查询服务注册表，并经请求转发到可用的服务实例。同客户端发现模式类似，服务实例在服务注册表中注册或注销。
+   
+   与客户端发现模式不同的是，服务端发现模式需要专门的负载均衡器来分发请求。这样客户端就可以保持相对简单，无须自己实现负载均衡机制。
+   
+   DNS域名解析可以提供最简单方式的服务端发现功能。它作为域名和IP地址相互映射的一个分布式数据库，能够使人更方便地访问互联网。
+   
+   在开源方面，Kubernetes(https://kubernetes.io)及NGINX(http://nginx.org/)也能作服务端发现的负载均衡器。
+   
+   服务端发现模式的好处是，它通常会简化客户端的开发工作，因为客户端并不需要关心负载均衡的细节工作，它所要作的就是将请求发到负载均衡器即可。
+   
+   实施服务端发现模式的难点，一个较大的问题的是需要考虑如何来配置和管理负载均衡器称为高可用的系统组件。
+   
+   ### 常见微服务的消费者
+   
+   #### Apache HttpClient
+   
+   #### Ribbon
+   
+   1. 所需环境
+   2. 配置环境
+   3. 启用Ribbon
+   4. 使用Ribbon
+   5. 应用配置
+   
+   #### Feign
+   
+   1. 所需环境
+   2. 项目配置
+   3. 启用Feign
+   4. 使用Feign
+   
+   ### 使用Feign实现服务的消费者
+   
+   #### 天气数据采集微服务使用Feign
+   
+   1. 项目配置
+   2. 启用Feign
+   3. 修改WeatherDataSyncJob
+   4. 修改项目配置
+   
+   #### 天气预报微服务使用Feign
+   
+   1. 项目配置
+   2. 启用Feign
+   3. 定义Feign客户端
+   4. 修改天气预报服务
+   5. 修改天气预报服务
+   6. 修改项目配置
+   
+   ### 实现服务的负载均衡及高可用
+   
+   #### 天气预报系统的微服务
+   
+   #### 运行微服务实例
+   
+   #### 测试天气预报服务
+   
+   ## API网关
+   
+   ### API网关的意义
+   
+   #### API并不能适用于所有场景
+   
+   #### API网关锁带来的好处
+   
+   1. 避免将内部信息泄漏该外部
+   2. 为微服务添加额外的安全层
+   3. 支持混合通信协议
+   4. 降低构建微服务的复杂性
+   5. 微服务模拟与虚拟化
+   
+   #### API网关的弊端
+   
+   ### 场景API网关的实现方式
+   
+   #### NGINX
+   
+   **将NGINX作为API网关**
+   
+   #### Spring Cloud Zuul
+   
+   #### Kong
+   
+   ### 如何集成Zuul
+   
+   #### Zuul简介
+   
+   #### 所需环境
+   
+   #### 更改配置
+   
+   #### 使用Zuul
+   
+   #### 运行和测试
+   
+   ### 实现API网关
+   
+   #### 配置API网关
+   
+   #### 修改新的天气预报微服务
+   
+   1. 修改Feign客户端
+   2. 修改应用配置
+   
+   #### 运行微服务实例
