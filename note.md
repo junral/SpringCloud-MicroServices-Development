@@ -2985,9 +2985,73 @@ dependencies {
    #### Feign
    
    1. 所需环境
+   
+      * Gradle
+      * Redis
+      * Spring Boot
+      * Spring Cloud Stater Netflix Eureka Client
+      * Spring Cloud Starter Open Feign
+   
    2. 项目配置
+   
+      为了使用Feign，增加以下配置：
+   
+      ```groovy
+      dependencies {
+          // 添加Spring Cloud Starter OpenFeign依赖
+          compile('org.springframework.cloud:spring-cloud-starter-openfeign')
+      }
+      ```
+   
+      
+   
    3. 启用Feign
+   
+      要启用Feign，最简单的方式就是在应用的根目录的Application类上添加org.springframework.cloud.openfeign.EnableFeignClients注解。
+   
    4. 使用Feign
+   
+      要使用Feign，首先要编写Feign请求接口。
+   
+      ```java
+      package com.waylau.spring.cloud.weather.service;
+      
+      import org.springframework.cloud.openfeign.FeignClient;
+      import org.springframework.cloud.bind.annotation.GetMapping;
+      
+      @FeignClient("mas-weather-city-eureka")
+      public interface CityClient {
+          @GetMapping("/cities")
+          public String listCity();
+      }
+      ```
+   
+      在控制器中使用该接口的实现。
+   
+      ```java
+      package com.waylau.spring.cloud.weather.controller;
+      
+      import org.springframework.bean.factory.annotation.Autowired;
+      import org.springframework.web.bind.annotation.GetMapping;
+      import org.springframework.web.bind.annotation.RestController;
+      
+      import com.waylau.spring.cloud.weather.service.CityClient;
+      
+      @RestController
+      public class CityController {
+          @Autowired
+          private CityClient cityClient;
+          
+          @GetMapping("/cities")
+          public String listCity() {
+              // 通过Feign客户端来查找
+              String body = cityClient.listCity();
+              return body;
+          }
+      }
+      ```
+   
+      
    
    ### 使用Feign实现服务的消费者
    
