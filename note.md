@@ -2459,43 +2459,43 @@ dependencies {
 * Spring Boot Thymeleaf Starter
    * Thymeleaf
 * Bootstrap
-   
+  
 #### 修改天气预报服务接口及实现
-   
+
 #### 调整控制层的代码
-   
+
 #### 删除配置类、天气数据同步任务和工具类
-   
+
 #### 清理值对象
-   
+
 #### 清理测试用例和配置文件
-   
+
 #### 测试和运行
-   
+
 ### 城市数据API微服务的实现
-   
+
 #### 所需环境
-   
+
 * JDK
    * Gradle
 * Spring Boot Web Starter
-   
+  
 #### 调整服务层代码
-   
+
 #### 调整控制层的代码
-   
+
 #### 删除配置类和天气数据同步任务
-   
+
 #### 清理值对象
-   
+
 #### 清理前端代码、配置及测试用例
-   
+
 #### 测试和运行
-   
+
 ## 微服务的注册与发现
-   
+
    ### 服务发现的意义
-   
+
    服务发现，意味着用户的发布可以让其他人找到。在互联网里面，最常用的服务发现机制莫过于域名。通过域名，用户可以发现该域名所对应的IP，继而能够找到发布这个IP的服务。域名和主机的关系并非是一对一的，有可能多个域名都映射到了同一个IP下面。DNS（Domain Name System，域名系统）是因特网的一项核心服务，它作为可以将域名和IP地址相互映射的一个分布式数据库，能够是人更方便地访问互联网，而不用去记住能够被及其直接读取的IP地址串。
 
    #### 通过URI来访问服务
@@ -2526,10 +2526,11 @@ dependencies {
 4. 开源
    
 ### 如何集成Eureka Server
-   
+
 #### 所需环境
-   
+
 * JDK
+   
    * Gradle
 * Spring Boot
    * Spring Cloud Starter Netflix Eureka Server
@@ -2810,13 +2811,176 @@ dependencies {
    
    #### Apache HttpClient
    
+   Apache HttpClient是Apache Jakarta Common下的子项目，用来提供高效的、最新的、功能丰富的支持HTTP的客户端编程工具包，并且支持HTTP最新的版本和建议。
+   
+   RestTemplate是Spring的核心类，用于同步客户端的HTTP访问。它简化了与HTTP服务器的通信，并强制执行RESTful原则。
+   
+   要使用Apache HttpClient，最简便的方式就是直接添加Apache HttpClient依赖：
+   
+   ```groovy
+   dependencies {
+       compile('org.apache.httpcomponents:httpclient:4.5.3')
+   }
+   ```
+   
+   然后通过RestTemplateBuilder来创建RestTemplate实例：
+   
+   ```java
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.boot.web.client.RestTemplateBuilder;
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   import org.springframework.web.client.RestTemplate;
+   
+   @Configuration
+   public class RestConfiguration {
+       
+       @Autowired
+       private RestTemplateBuilder builder;
+       
+       @Bean
+       public RestTemplate restTemplate() {
+           return builder.build();
+       }
+   }
+   ```
+   
+   
+   
    #### Ribbon
    
+   Spring Cloud Ribbon 是基于Netflix Ribbon实现的一套客户端负载均衡的工具。它是一个基于HTTP和TCP的客户端负载均衡器。
+   
+   Ribbon的一个中心概念就是命名客户端。每个负载均衡器都是组合整个服务组件的一部分，它们一起协作，并可以根据需要与远程服务器进行交互，获取包含命名客户端名称的集合。
+   
+   Ribbon经常与Eureka结合使用。Eureka为所有微服务实例提供服务注册，而Ribbon提供服务消费的客户端。
+   
+   负载均衡策略：
+   
+   * 简单轮询负载均衡。
+   * 加权响应时间负载均衡。
+   * 区域感知轮询负载均衡。
+   * 随机负载均衡。
+   
+   其中，区域感知负载均衡器是Ribbon一个久经考验的功能，该负载均衡器会采取如下步骤：
+   
+   * 负载均衡器会检查 、计算所有可用区域的状态。如果某个区域中平均每个服务器的活跃请求已经达到配置的阈值，该区域将从活跃服务列表中排除。如果多余一个区域已经达到阈值，平均每服务器拥有最多活跃请求的区域将被排除。
+   * 最差的区域被排除后，从剩下的的区域中，将按照服务器实例数的概率抽样选择一个取悦。
+   * 在选定区域总，将会根据给定负载均衡策略规则返回一个服务器。
+   
    1. 所需环境
-   2. 配置环境
+      * JDK
+      * Gradle
+      * Redis
+      * Spring Boot
+      * Spring Cloud Starter Netflix Eureka Client
+      * Spring Cloud Starter Netflix Ribbon
+      
+   2. 项目配置
+   
+      添加Ribbon依赖
+   
+      ```groovy
+      pendencies {
+          //...
+          compile('org.springframework.cloud:spring-cloud-starter-netflix-ribbon')
+      }
+      ```
+   
+      
+   
    3. 启用Ribbon
+   
+      Spring Cloud提供了声明式@RibbonClient注解来使用Ribbon。
+   
+      ```java
+      package com.waylau.spring.cloud.weather.config;
+      
+      import org.springframework.beans.factory.annotation.Autowired;
+      import org.springframework.boot.client.RestTemplateBuilder;
+      import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+      import org.springfarmework.cloud.netflix.ribbon.RibbonClient;
+      import org.springframework.context.annotation.Bean;
+      import org.springframework.context.annotation.Configuration;
+      import org.springframework.web.client.RestTemplate;
+      
+      @Configuration
+      @RibbonClient(name = "ribbon-client", configuration = RibbonConfiguration.class)
+      public class RestConfiguration {
+          @Autowired
+          private RestTemplateBuilder builder;
+          
+          @Bean
+          @LoadBalanced
+          public RestTemplate restTemplate() {
+              return builder.build();
+          }
+      }
+      ```
+   
+      ```java
+      package com.waylau.spring.cloud.weather.config;
+      
+      import org.springframework.cloud.netflix.ribbon.ZonePreferenceServiceListFilter;
+      import org.springframework.context.annotation.Bean;
+      import org.springframework.context.annotation.Configuration;
+      
+      import com.netflix.loadBalancer.IPing;
+      import com.netflix.loadBalancer.PingUrl;
+      
+      @Configuration
+      public class RibbonConfiguration {
+          @Bean
+          public ZonePreferenceServerListFilter serverListFilter() {
+              ZonePreferenceServerListFilter filter = new ZonePreferenceServerListFilter();
+              filter.setZone("myZone");
+              return filter;
+          }
+          
+          @Bean
+          public IPing ribbonPing() {
+              return new PingUri();
+          }
+      }
+      ```
+   
+      
+   
    4. 使用Ribbon
+   
+      编写CityController，用于使用Ribbon配置的RestTemplate。
+   
+      ```java
+      import org.springframework.beans.factory.annotation.Autowired;
+      import org.springframework.web.bind.annotation.GetMapping;
+      import org.springframework.web.client.RestTemplate;
+      
+      @RestController
+      public class CityController {
+          @Autowired
+          private RestTemplate restTemplate;
+          
+          @GetMapping("/cities")
+          public String listCity() {
+              // 通过应用名称来查找
+              String body = restTemplate.getForEntity("http://msa-weather-city-eureka/cities", String.class).getBody();
+              return body;
+          }
+      }
+      ```
+   
+      
+   
    5. 应用配置
+   
+      application.properties文件内容：
+   
+      ```properties
+      spring.application.name=micro-weather-eureka-client-ribbon
+      eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
+      ```
+   
+      
    
    #### Feign
    
