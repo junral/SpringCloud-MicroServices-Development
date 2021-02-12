@@ -2530,7 +2530,7 @@ dependencies {
 #### 所需环境
 
 * JDK
-   
+  
    * Gradle
 * Spring Boot
    * Spring Cloud Starter Netflix Eureka Server
@@ -3058,9 +3058,110 @@ dependencies {
    #### 天气数据采集微服务使用Feign
    
    1. 项目配置
+   
+      为了使用Feign，在build.gradle文件中增加以下配置。
+   
+      ```groovy
+      dependencies {
+          //...
+          compile('org.springframework.cloud:spring-cloud-starter-openfeign')
+      }
+      ```
+   
+      
+   
    2. 启用Feign
+   
+      要启用Feign，在应用的根目录的Application上添加org.springframework.cloud.openfeign.EnableFeignClients注解即可。
+   
    3. 修改WeatherDataSyncJob
+   
+      首先，定义一个Feign客户端CityClient。
+   
+      ```java
+      package com.waylau.spring.cloud.weather.service;
+      
+      import java.util.List;
+      
+      import org.springframework.cloud.netflix.feign.FeignClient;
+      import org.springframework.web.bind.annotation.GetMapping;
+      
+      import com.waylau.spring.cloud.weather.vo.City;
+      
+      @FeignClient("msa-weather-city-eureka")
+      public interface CityClient {
+          @GetMapping("/cities")
+          public List<City> listCity() throws Exception;
+      }
+      ```
+   
+      在需要获取外部服务的WeatherDataSyncJob类中，使用CityClient接口即可。
+   
+      ```java
+      package com.waylau.spring.cloud.weather.job;
+      
+      import java.util.List;
+      
+      import org.quartz.JobExecutionContext;
+      import org.quartz.JobExcecutionException;
+      import org.slf4j.Logger;
+      import org.slf4j.LoggerFactory;
+      import org.springframework.beans.factory.annotation.Autowired;
+      import org.springframework.scheduling.quartz.QuartzJobBean;
+      
+      import com.waylau.spring.cloud.weather.service.CityClient;
+      import com.waylau.spring.cloud.weather.service.WeatherDataCollectionService;
+      import com.waylau.spring.cloud.weather.vo.City;
+      
+      public class WeatherDataSyncJob extends QuartzJobBean {
+          private final static Logger logger = LoggerFactory.getLogger(WeatherDataSyncJob.class);
+          
+          @Autowired
+          private WeatherDataCollectionService weatherDataCollectionService;
+          
+          @Autowired
+          private CityClient cityClient;
+          
+          protected void executeInternal(JobExcectionContext context) throws JobExecutionExcception {
+              logger.info("Start天气数据同步任务");
+              
+              // 由城市数据API微服务来提供数据
+              List<City> cityList = null;
+              try {
+                  // 调用城市数据API
+                  cityList = cityClient.listCity();
+              } catch (Exception e) {
+                  logger.error("获取城市信息异常！", e);
+                  throw new RuntimeException("获取城市信息异常！", e);
+              }
+              
+              for(City city : cityList) {
+                  String cityId = city.getCityId();
+                  logger.info("天气数据同步任务中，cityId:" + cityId);
+                  
+                  // 根据城市ID同步天气数据
+                  weatherDataCollectionService.syncDataByCityId(cityId);
+              }
+              
+              logger.info("End 天气数据同步任务");
+          }
+      }
+      ```
+   
+      
+   
    4. 修改项目配置
+   
+      最后，修改application.properties。
+   
+      ```properties
+      spring.application.name=msa-weather-collection-eureka-feign
+      eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
+      feign.client.config.feignName.connectionTimeout=5000
+      feign.client.config.feignName.readTimeout=5000
+      ```
+   
+      
    
    #### 天气预报微服务使用Feign
    

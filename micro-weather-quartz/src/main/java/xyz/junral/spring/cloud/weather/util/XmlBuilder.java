@@ -18,7 +18,7 @@ public class XmlBuilder {
      * @throws Exception
      */
     public static Object xmlStrToObject(Class<?> clazz, String xmlStr) throws Exception {
-        Object  xmlObject = null;
+        Object xmlObject = null;
         Reader reader = null;
 
         JAXBContext context = JAXBContext.newInstance(clazz);
