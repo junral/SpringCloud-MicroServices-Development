@@ -4,11 +4,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Hello Controller.
- * @author Junral
- */
 @RestController
+@RequestMapping("/hi")
 public class HelloController {
 
     @GetMapping("/hello")

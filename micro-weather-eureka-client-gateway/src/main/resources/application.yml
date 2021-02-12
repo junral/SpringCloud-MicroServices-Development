@@ -1,0 +1,24 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: micro-weather-eureka-client-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true # 开启当前项目服务注册与发现功能
+          lower-case-service-id: true # 把服务名转换为小写，Eureka中默认都是大写
+      routes:
+        - id: hi
+          uri: lb://micro-weather-eureka-client
+          predicates:
+            - Path=/hi/**
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

@@ -42,9 +42,11 @@ repositories {
 
 dependencies {
 	// 添加Spring Boot Starter Web依赖
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// implementation 'org.springframework.boot:spring-boot-starter-web'
 	// 娣诲姞Spring Cloud Starter Netflix Eureka Client渚濊禆
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	// 添加Spring Cloud Starter Gateway依赖
+	implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
