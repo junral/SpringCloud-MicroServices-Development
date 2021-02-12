@@ -3166,11 +3166,155 @@ dependencies {
    #### 天气预报微服务使用Feign
    
    1. 项目配置
+   
+      为了使用Feign，在build.gradle文件中增加如下配置：
+   
+      ```groovy
+      dependencies: {
+          //...
+          compile('org.springframework.cloud:spring-cloud-starter-openfeign')
+      }
+      ```
+   
+      
+   
    2. 启用Feign
+   
+      要启用Feign，在应用根目录的Application类上添加org.springframework.cloud.openfeign.EnableFeignClients注解即可。
+   
    3. 定义Feign客户端
+   
+      首先定义一个Feign客户端CityClient，从城市数据API微服务msa-weather-city-eureka中获取城市的信息。
+   
+      ```java
+      package com.waylau.spring.cloud.weather.service;
+      
+      import java.util.List;
+      
+      import org.springframework.cloud.netflix.feign.FeignClient;
+      import org.springframework.web.bind.annotation.GetMapping;
+      
+      import com.waylau.spring.cloud.weather.vo.City;
+      
+      @FeignClient("msa-weather-city-eureka")
+      public interface CityClient {
+          @GetMapping("/cities")
+          public List<City> listCity() throws Exception;
+      }
+      ```
+   
+      再定义一个Feign客户端WeatherDataClient，从天气数据API微服务msa-weather-data-eureka中获取天气数据。
+   
+      ```java
+      package com.waylau.spring.cloud.weather.service;
+      
+      import org.springframework.cloud.openfeign.FeignClient;
+      
+      import com.waylau.spring.cloud.weather.vo.WeatherResponse;
+      
+      @FeignClient("msa-weather-data-eureka")
+      public interface WeatherDataClient {
+          @GetMapping("/weather/cityId/{cityId}")
+          public WeatherResponse getDataByCityId(@PathVariable("cityId") String cityId);
+      }
+      ```
+   
+      
+   
    4. 修改天气预报服务
-   5. 修改天气预报服务
+   
+      修改天气预报服务WeatherReportServiceImpl，将原有的伪造的数据该从Feign客户端获取天气数据API微服务提供的数据。
+   
+      ```java
+      package com.waylau.spring.cloud.weather.service;
+      
+      import org.springframework.beans.factory.annotation.Autowired;
+      import org.springframework.stereotype.Service;
+      
+      import com.waylau.spring.cloud.weather.vo.Weather;
+      import com.waylau.spring.cloud.weather.vo.WeatherResponse;
+      
+      @Service
+      public class WeatherReportServiceImpl implements WeatherReportService {
+          
+          @Autowired
+          private WeatherDataClient weatherDataClient;
+          
+          @Override
+          public Weather getDataByCityId(String cityId) {
+              WeatherResponse response = weatherDataClient.getDataByCityId(cityId);
+              return response.getData();
+          }
+      }
+      ```
+   
+      
+   
+   5. 修改天气预报控制器
+   
+      修改天气预报控制器WeatherReportController，将原有的伪造的城市数据改为由CityClient来获取城市数据API微服务中的城市数据。
+   
+      ```java
+      package com.waylau.spring.cloud.weather.controller;
+      
+      import java.util.List;
+      
+      import org.slf4j.Logger;
+      import org.slf4j.LoggerFactory;
+      import org.springframework.beans.factory.annotation.Autowired;
+      import org.springframework.ui.Model;
+      import org.springframework.web.bind.annotation.GetMapping;
+      import org.springframework.web.bind.annotation.PathVariable;
+      import org.springframeowrk.web.bind.annotation.RequestMapping;
+      import org.springframework.web.bind.annotation.RestController;
+      import org.springframework.web.servlet.ModelAndView;
+      
+      import com.waylau.spring.cloud.weather.service.CityClient;
+      import com.waylau.spring.cloud.weather.service.WeatherResponseService;
+      improt com.waylau.spring.cloud.weather.vo.city;
+      
+      @RestController;
+      @RequestMapping("/report")
+      public class WeatherReprotController {
+          private final static Logger logger = LoggerFactory.getLogger(WeatherReportController.class);
+          
+          @Autowired
+          private CityClient cityClient;
+          
+          @Autowired
+          private WeatherReportService weatherReportService;
+          
+          public ModelAndView getReportByCityId(@PathVariable("cityId") String cityId, Model model) throws Exception {
+              List<City> cityList = null;
+              try {
+                  cityList = cityClient.listCity();
+              } catch (Exception e) {
+                  logger.error("获取城市信息异常！", e);
+                  throw new RuntimeException("获取城市信息异常！", e);
+              }
+              model.addAttribute("title", "老卫的天气预报");
+              model.addAttribute("cityId", cityId);
+              model.addAttribute("cityList", cityList);
+              model.addAttribute("report", weatherReprotService.getDataByCityId(cityId));
+              return new ModelAndView("weather/report", "reportModel", model);
+          }
+      }
+      ```
+   
+      
+   
    6. 修改项目配置
+   
+      最后，修改application.properties。
+   
+      ```properties
+      spring.application.name=msa-weather-collection-eureka-feign
+      eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
+      feign.client.config.feignName.connectionTimeout=5000
+      feign.client.config.feignName.readTimeout=5000
+      ```
+   
+      
    
    ### 实现服务的负载均衡及高可用
    

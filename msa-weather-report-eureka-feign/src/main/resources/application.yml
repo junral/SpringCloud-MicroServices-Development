@@ -1,0 +1,20 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: wsa-weather-report-eureka-feign
+  thymeleaf:
+    cache: false
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+feign:
+  client:
+    config:
+      feignName:
+        connectionTimeout: 5000
+        readTimeout: 5000
