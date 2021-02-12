@@ -3515,6 +3515,33 @@ dependencies {
    #### 修改新的天气预报微服务
    
    1. 修改Feign客户端
+   
+      删除CityClient、WeatherDataClient，并创建DataClient用于获取城市列表数据及天气数据。
+   
+      ```java
+      package com.waylau.spring.cloud.weather.service;
+      
+      import java.util.List;
+      
+      import org.springframework.cloud.netflix.feign.FeignClient;
+      import org.springframework.web.bind.annotation.GetMapping;
+      import org.springframework.web.bind.annotation.PathVariable;
+      
+      import com.waylau.spring.cloud.weather.vo.City;
+      import com.waylau.spring.cloud.weather.vo.WeatherResponse;
+      
+      @FeignClient("msa-weather-eureka-client-zuul")
+      public interfac DataClient {
+          @GetMapping("/city/cities")
+          public List<City> listCity() throws Exception;
+          
+          @GetMapping("/data/weather/cityId/{cityId}")
+          public WeatherResponse getDataByCityId(@PathVariable("cityId") String cityId);
+      }
+      ```
+   
+      同时，将依赖WeatherDataClient和CityClient的地方修改为DataClient。
+   
    2. 修改应用配置
    
    #### 运行微服务实例
