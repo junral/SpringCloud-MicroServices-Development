@@ -1,0 +1,32 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: msa-weather-eureka-client-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true # 开启当前项目服务注册与发现功能
+          lower-case-service-id: true # 把服务名转换为小写，Eureka中默认都是大写
+      routes:
+        - id: city
+          uri: lb://msa-weather-city-eureka
+          predicates:
+            - Path=/city/**
+          filters:
+            - StripPrefix=1 # 表示在转发时去掉city
+        - id: data
+          uri: lb://msa-weather-data-eureka
+          predicates:
+            - Path=/data/**
+          filters:
+            - StripPrefix=1 # 表示在转发时去掉data
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

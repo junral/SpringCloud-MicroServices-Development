@@ -3497,6 +3497,21 @@ dependencies {
    
    #### 配置API网关
    
+   在micro-weather-eureka-client-zuul的基础上，创建一个新的应用msa-weather-eureka-client-zuul。
+   
+   application.properties配置如下：
+   
+   ```properties
+   spring.application.name=msa-weather-eureka-client-zuul
+   eureka.client.serviceUrl.defaultzone=http://localhost:8761/eureka/
+   zuul.routes.city.path=/city/**
+   zuul.routes.city.serviceId=msa-weather-city-eureka
+   zuul.routes.data.path=/data/**
+   zuul.routes.data.serviceId=msa-weather-data-eureka
+   ```
+   
+   
+   
    #### 修改新的天气预报微服务
    
    1. 修改Feign客户端
