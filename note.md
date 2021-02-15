@@ -3788,40 +3788,320 @@ dependencies {
    
    ### 微服务日志管理将面临的挑战
    
+   日志是应用里面不可或缺的非常重要的组成部分。特别是对于运维人员来说，日志是排除问题、解决问题的关键。
+   
+   日志来自正在运行的进程的事件流。
+   
+   日志处理的最佳实践之一是关闭生产中的大部分日志条目，因为磁盘IO的成本很高。磁盘IO不但会减慢应用程序的运行速度，还会严重影响它的可伸缩性。将日志写入磁盘也需要较高的磁盘容量。当磁盘空间用完之后，就有可能降低应用程序的性能。日志框架提供了在运行时控制日志记录的选项，以限制必须打印及不打印的内容。
+   
+   另外，日志可能包含重要的信息，如果分析得当，则可能具有很高的价值。因此，限制日志条目本质上限制了用户解决应用程序行为的能力。
+   
    #### 日志文件分散
+   
+   微服务架构锁带来的直观结果，就是为服务实例数量的增长，伴随而来的就是日志文件的递增。
+   
+   在微服务架构里，每个微服务实例都是独立部署的，日志文件分散在不同的主机里。如果还是按照传统的运维方式，登录到应用程序所在的主机来查看日志文件，这种方式基本上不可能在微服务架构中使用。
    
    #### 日志容易丢失
    
+   从传统部署移到云部署时，应用程序不再锁定到特定的预定机器。虚拟机和容器应用程序之间没有强制的关联关系，这意味着用于部署的机器可能会随时更改。特别像是Docker这样的容器，通常来说都是非常短暂的，这基本上意味着不能依赖磁盘的持久状态。一旦容器停止并重新启动，写入磁盘的日志文件将会丢失，所以不能依靠本地机器的磁盘来记录日志文件。
+   
    #### 事务跨越了多个服务
+   
+   在微服务架构中，微服务实例将运行在孤立的物理或虚拟机上。在这种情况下，阆中多个微服务的端到端事务几乎是不可能的。
+   
+   微服务实例在不同的机器上，因此很难实现服务级别的日志聚合，最终导致了日志文件的碎片化。
    
    ### 日志集中化的意义
    
+   日志管理解决方案，需要考虑的功能：
+   
+   * 能够收集所有日志消息并在日志消息之上运行分析。
+   * 能够关联和跟踪端到端的事务。
+   * 能够保存更长时间的日志信息，以便进行趋势分析和预测。
+   * 能够消除对本地磁盘系统的依赖。
+   * 能够聚合来自多个来源的日志信息，如网络设备、操作系统、微服务等。
+   
+   解决这些问题的方法是集中存储和分析所有的日志消息，而不考虑日志的来源。
+   
+   在集中式日志解决方案，日志消息将从执行环境发送到中央大数据存储。日志分析和处理将使用大数据解决方案进行处理。
+   
    #### 集中化日志管理的系统架构
    
+   集中化日志管理系统包含的组件：
+   
+   * 日志流：
+   * 日志托运
+   * 日志存储
+   * 日志流处理器
+   * 日志仪表板
+   
    #### 集中化日志管理的意义
+   
+   集中化日志管理的好处不仅没有本地IO或阻塞磁盘写入，也没有使用本地机器的磁盘空间。这种架构用于大数据处理的Lambda架构基本相似。
+   
+   同时，每条日志信息都包含了上下文及相关ID。上下文通常会有时间戳、IP地址、用户信息、日志类型等。
    
    ### 常见的日志集中化的实现方式
    
    #### 日志托运
    
+   不同的日志托运工具的功能不同：
+   
+   * Logstash：
+   * Fluented：
+   
    #### 日志存储
+   
+   实时日志消息通常存储在Elasticsearch中，它允许客户端根据基于文本的索引进行查询。除了Elasticsearch外，HDFS还常用于存储归档的日志消息。MongoDB或Cassandra用于存储汇总数据。
+   
+   脱机日志处理可以使用Hadoop的map reduce程序完成。
    
    #### 日志流处理器
    
+   日志处理器可用于处理日志流。
+   
+   日志处理器的典型架构是将Fluent和Kafka结合在一起，并在Storm或Spark Streaming结合使用。Log4j有Flume appender，可用于收集日志消息。这些消息将被推送到分布式Kafka消息队列中。流处理器从Kafka收集数据，并在发送给Elasticsearch和其他日志存储之前进行处理。
+   
+   Spring Cloud Stream和Spring Cloud Data Flow可用于构建日志流处理器。
+   
    #### 日志仪表板
+   
+   日志分析最常用的仪表板是使用Elasticsearch数据存储的Kibana。
+   
+   Graphite和Grafana也被用来显式日志分析报告。
    
    ### Elastic Stack实现日志集中化
    
    #### Elasticsearch的安装和使用
    
+   1. 下载Elasticsearch，下载地址为https://www.elastic.co/cn/downloads/Elasticsearch
+   2. 解压。
+   3. 运行。
+   4. 访问。网址为http://localhost:9200/
+   
    #### Kibana的安装和使用
+   
+   1. 下载Kibana，下载地址为https://www.elastic.co/cn/downloads/Kibana
+   2. 解压。
+   3. 运行。
+   4. 访问。网址为http://localhost:5601/
    
    #### Logstash的安装和使用
    
+   1. 下载Logstash，下载地址为https://www.elastic.co/cn/downloads/Logstash
+   2. 解压。
+   3. 运行。
+   
    #### 综合示例演示
+   
+   1. 创建hello-world-log
+   
+   2. 添加Logback JSON编码器
+   
+      ```groovy
+      dependencies {
+          //...
+          compile('net.logstash.logback:logstash-logback-encoder:4.11')
+      }
+      ```
+   
+      
+   
+   3. 添加logback.xml
+   
+      在应用的src/main/resources目录下，创建logback.xml文件
+   
+      ```xml
+      <?xml version="1.0" encoding="UTF-8"?>
+      <configuration>
+          <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+          <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+          <appender name="stash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+              <destination>localhost:4560</destination>
+              <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+          </appender>
+          <root level="INFO">
+              <appender-ref ref="CONSOLE"/>
+              <appender-ref ref="stash"/>
+          </root>
+      </configuration>
+      ```
+   
+      
+   
+   4. 创建logstash.conf
+   
+      在Logstash的bin目录下，创建logstash.conf文件，用于配置Logstash
+   
+      ```tex
+      input {
+      	tcp {
+      		port => 4560
+      		host => localhost
+      	}
+      }
+      output {
+      	elasticsearch { hosts => ["locahost:9200"] }
+      	stdout { codec => rubydebug }
+      }
+      ```
+   
+      
+   
+   5. 启动Elastic Stack
+   
+      按以下顺序执行命令来启动Elastic Stack。
+   
+      ```bash
+      .\bin\elasticsearch
+      .\bin\kibana
+      .\bin\logstash -f logstash.conf
+      ```
+   
+      
+   
+   6. 启动hello-world-log
+   
+   7. Kibana分析日志
    
    #### 集中式日志管理系统的展望
    
    ## 微服务的集中化配置
+   
+   ### 为什么需要集中化配置
+   
+   #### 配置分类
+   
+   1. 按配置的来源划分
+   2. 按适用的环境划分
+   3. 按配置的集成阶段划分
+   4. 按配置的加载方式划分
+   
+   #### 配置中心的需求
+   
+   #### Spring Cloud Config
+   
+   ### 使用Config实现的配置中心
+   
+   #### 开发环境
+   
+   #### 创建配置中心的服务端
+   
+   #### 创建配置中心的客户端
+   
+   #### 如何测试
+   
+   ## 微服务的高级主题——自动扩展
+   
+   ### 自动扩展的定义
+   
+   #### 自我注册和自我发现
+   
+   #### 自我扩展的核心概念
+   
+   ### 自动扩展的意义
+   
+   ### 自动扩展的常见模式
+   
+   #### 自动扩展的不同级别
+   
+   #### 自动扩展的常用方法
+   
+   ### 如何实现微服务的自动扩展
+   
+   #### 容器编排
+   
+   #### 常用的容器编排技术
+   
+   ## 微服务的高级主题——熔断机制
+   
+   ### 什么是服务的熔断机制
+   
+   #### 服务熔断的定义
+   
+   #### 断路器
+   
+   #### 断路器模式
+   
+   ### 熔断的意义
+   
+   #### 断路器模式所带来的好处
+   
+   #### 断路器模式的功能
+   
+   ### 熔断与降级的区别
+   
+   #### 熔断与降级的相似点
+   
+   #### 熔断与降级的区别
+   
+   ### 如何集成Hystrix
+   
+   #### 所需环境
+   
+   #### 更改配置
+   
+   #### 使用Hystrix
+   
+   #### 增加断路器
+   
+   #### 修改应用配置
+   
+   #### 运行、测试
+   
+   ### 实现微服务的熔断机制
+   
+   #### 更改配置
+   
+   #### 使用Hystrix
+   
+   #### 实现断路器
+   
+   #### 修改report.html页面
+   
+   #### 修改应用配置
+   
+   #### 运行、测试
+   
+   ## 微服务的高级主题——分布式消息总线
+   
+   ### 消息总线的定义
+   
+   #### 消息总线常见的设计模式
+   
+   #### 消息总线的意义
+   
+   #### 消息总线常见的实现方式
+   
+   #### Spring Cloud Bus实现消息总线
+   
+   ### Spring Cloud Bus设计原理
+   
+   #### 基于Spring Cloud Stream
+   
+   #### Spring Cloud Bus的编程模型
+   
+   ### 如何集成Bus
+   
+   #### 初始化应用
+   
+   #### 所需环境
+   
+   #### 更改配置
+   
+   #### 下载安装RabbitMQ
+   
+   #### 修改micro-weather-config-client-bus
+   
+   #### 运行、测试
+   
+   ### 实现配置信息的自动更新
+   
+   #### 刷新配置信息
+   
+   #### 实现配置信息的自动更新
+   
+   #### 使用ngrok进行本地测试
    
    
