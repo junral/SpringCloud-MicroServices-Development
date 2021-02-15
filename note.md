@@ -3974,23 +3974,92 @@ dependencies {
    #### 配置分类
    
    1. 按配置的来源划分
+   
+      按配置的来源划分，主要有源代码、文件、数据库连接、远程调用等。
+   
    2. 按适用的环境划分
+   
+       按配置的适用环境划分，可分为开发环境、测试环境、预发布环境、生产环境等。
+   
    3. 按配置的集成阶段划分
+   
+      按配置的继承阶段划分，可分为编译时、打包时和运行时。编译时，最常见的有两种，一是源代码级的配置，二是把配置文件和源代码一起提交到代码仓库中。打包时，即在应用打包阶段通过某种方式将配置（一般是文件形式）打入最终的应用包中。运行时，是指应用启动前并不知道具体的配置，而是在启动时，先从本地或远程获取配置，然后在正常启动。
+   
    4. 按配置的加载方式划分
+   
+      按配置的加载方式划分，可分为启动加载和动态加载配置。
+   
+      启动加载是指应用在启动是获取配置，并且只获取一次，在应用运行过程中不会再去加载。这类配置通常是不会经常变更，如端口号、线程池大小等。
+   
+      动态加载是指应用在运行过程中，随时都可以获取到的配置，这些配置意味着会在应用运行过程中经常被修改。
    
    #### 配置中心的需求
    
+   * 面向可配置的编码。编码过程中，应及早考虑将后期可能经常变更的数据，设置为可以配置的配置项，从而避免在代码里面硬编码。
+   * 隔离性。不同部署环境下，应用之间的配置是相互隔离的。
+   * 一致性。相同部署环境下的服务器应用配置应该具有一致性，即同个应用的所有实例都使用同一份配置。
+   * 集中化配置。在分布式环境下，应用配置应该具备可管理性，即提供远程管理配置的能力。
+   
    #### Spring Cloud Config
+   
+   Spring Cloud Config 致力于为分布式系统中的外部化配置提供支持。其中，Spring Cloud Config又分为供服务器（Config Server）和客户端（Config Client）两个版本。Spring Cloud Config 的客户端和服务器上的概念都与任何运行在任何语言的应用程序一起使用。当应用程序从未开发到测试转移到部署管道时，可以通过管理这些环境之间的配置，来确保应用程序具有在迁移所需运行的所有内容。
    
    ### 使用Config实现的配置中心
    
    #### 开发环境
    
+   * JDK
+   * Gradle
+   * Spring Boot
+   * Spring Cloud Starter Netflix Eureka Client
+   * Spring Cloud Config Server
+   * Spring Cloud Config Client
+   
    #### 创建配置中心的服务端
+   
+   1. 更改配置
+   
+      ```groovy
+      dependencies {
+          //...
+          compile('org.springframework.cloud:spring-cloud-config-server')
+      }
+      ```
+   
+      
+   
+   2. 一个简单的Config Server
+   
+      要使用Config Server，只需在程序的入口Application类加上org.springframework.cloud.config.server.EnableConfigServer注解，开启配置中心功能即可。
+   
+      
+   
+      修改application.properties文件。
+   
+      ```properties
+      server.port=8888
+      spring.application.name=micro-weather-config-server
+      spring.cloud.config.server.git.uri=http://github.com/waylau/spring-cloud-microservices-development
+      spring.cloud.confgiserver.git.searchPaths=config-repo
+      eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
+      ```
+   
+      其中：
+   
+      * spring.cloud.config.server.git.uri：配置Git仓库地址。
+      * spring.cloud.config.server.git.searchPaths：配置查找配置的路径。
+   
+   3. 测试
    
    #### 创建配置中心的客户端
    
+   1. 更改配置
+   2. 一个简单的Config Client
+   
    #### 如何测试
+   
+   1. 编写测试用例
+   2. 运行和测试
    
    ## 微服务的高级主题——自动扩展
    
