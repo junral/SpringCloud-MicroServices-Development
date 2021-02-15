@@ -4054,11 +4054,62 @@ dependencies {
    #### 创建配置中心的客户端
    
    1. 更改配置
+   
+      要使用Spring Cloud Config Client，添加Spring Cloud Config Client依赖。
+   
+      ```groovy
+      dependencies {
+          //...
+          compile('org.springframework.cloud:spring-cloud-config-client')
+      }
+      ```
+   
+      
+   
    2. 一个简单的Config Client
+   
+      修改配置文件application.properties:
+   
+      ```properties
+      spring.application.name=micro-weather-config-client
+      eureka.client.serviceUrl.defaultZone=http://locahost:8761/eureka/
+      spring.cloud.config.profile=dev
+      spring.cloud.config.uri=http://locahost:8888/
+      ```
+   
+      
    
    #### 如何测试
    
    1. 编写测试用例
+   
+      ```java
+      package com.waylau.spring.cloud.weather;
+      
+      import static org.junit.Assert.assertEquals;
+      
+      import org.junit.Test;
+      import org.junit.runner.RunWith;
+      import org.springframework.beans.factory.annotation.Value;
+      import org.springframework.boot.test.context.SpringBootTest;
+      import org.springframework.test.context.junit4.SpringRunner;
+      
+      @RunWith(SpringRunner.class)
+      @SpringBootTest
+      public class ApplicationTests {
+      
+          @Value("${auther}")
+          private String auther;
+      
+          @Test
+          public void contextLoads() {
+              assertEquals("waylau.com", auther);
+          }
+      }
+      ```
+   
+      
+   
    2. 运行和测试
    
    ## 微服务的高级主题——自动扩展
